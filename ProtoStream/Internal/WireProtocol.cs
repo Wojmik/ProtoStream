@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using WojciechMikołajewicz;
 
 namespace ProtoStream.Internal
 {
@@ -11,7 +12,7 @@ namespace ProtoStream.Internal
 	{
 		static readonly SkipMethodHandler[] SkipMethodsByWireType = new SkipMethodHandler[]
 		{
-			Base64VarInt.TrySkipVarInt,
+			Base128.TrySkip,
 			TrySkipFixed64,
 			TrySkipLengthDelimited,
 			TrySkipStartGroup,
@@ -32,7 +33,7 @@ namespace ProtoStream.Internal
 		/// <returns>Jeśli zapis się powiódł to true, w przeciwnym razie false - co oznacza że docelowa tablica miała za mało miejsca żeby zapisać dane</returns>
 		public static bool TryWriteFieldKey(Span<byte> destination, WireType type, int fieldNo, out int written)
 		{
-			return Base64VarInt.TryWriteUInt64VarInt(destination: destination, value: (((ulong)fieldNo)<<3)|(ulong)type, written: out written);
+			return Base128.TryWriteUInt64(destination: destination, value: (((ulong)fieldNo)<<3)|(ulong)type, written: out written);
 		}
 
 		/// <summary>
@@ -48,7 +49,7 @@ namespace ProtoStream.Internal
 			ulong value;
 			bool success;
 
-			success=Base64VarInt.TryReadUInt64VarInt(source: source, value: out value, read: out read);
+			success=Base128.TryReadUInt64(source: source, value: out value, read: out read);
 			type=(WireType)(value&0x07);
 			fieldNo=(int)(value>>3);
 			return success;
@@ -96,7 +97,7 @@ namespace ProtoStream.Internal
 			bool success;
 
 			//Odczytaj długość pola zmiennej długości
-			success=Base64VarInt.TryReadInt64VarInt(source: source, value: out bytesToRead, read: out read);
+			success=Base128.TryReadInt64(source: source, value: out bytesToRead, read: out read);
 			//Pomiń tyle bajtów ile zajmuje pole
 			if(success)
 			{

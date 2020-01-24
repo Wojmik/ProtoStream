@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WojciechMikołajewicz;
 
 namespace ProtoStream
 {
@@ -139,7 +140,7 @@ namespace ProtoStream
 			Internal.WireProtocol.TryWriteFieldKey(destination: new Span<byte>(Buffer, BufferPos, 5), type: Internal.WireType.VarInt, fieldNo: fieldNo, written: out written);
 			BufferPos+=written;
 
-			Internal.Base64VarInt.TryWriteInt64VarInt(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
+			Base128.TryWriteInt64(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
 			BufferPos+=written;
 		}
 
@@ -157,7 +158,7 @@ namespace ProtoStream
 				await FlushAsync(cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 
-			Internal.Base64VarInt.TryWriteInt64VarInt(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
+			Base128.TryWriteInt64(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
 			BufferPos+=written;
 		}
 
@@ -179,7 +180,7 @@ namespace ProtoStream
 			Internal.WireProtocol.TryWriteFieldKey(destination: new Span<byte>(Buffer, BufferPos, 5), type: Internal.WireType.VarInt, fieldNo: fieldNo, written: out written);
 			BufferPos+=written;
 
-			Internal.Base64VarInt.TryWriteUInt64VarInt(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
+			Base128.TryWriteUInt64(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
 			BufferPos+=written;
 		}
 
@@ -197,7 +198,7 @@ namespace ProtoStream
 				await FlushAsync(cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 
-			Internal.Base64VarInt.TryWriteUInt64VarInt(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
+			Base128.TryWriteUInt64(destination: new Span<byte>(Buffer, BufferPos, 10), value: value, written: out written);
 			BufferPos+=written;
 		}
 

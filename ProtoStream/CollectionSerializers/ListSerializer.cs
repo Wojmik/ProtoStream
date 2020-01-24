@@ -209,7 +209,7 @@ namespace ProtoStream.CollectionSerializers
 		/// <returns>True if <paramref name="value"/> is default value, false otherwise</returns>
 		public bool IsDefault(TList value)
 		{
-			return value==default;
+			return value==null;
 		}
 	}
 }

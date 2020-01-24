@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
+using WojciechMikołajewicz;
 
 namespace ProtoStream
 {
@@ -231,7 +232,7 @@ namespace ProtoStream
 			long value;
 			int read;
 
-			while(!Internal.Base64VarInt.TryReadInt64VarInt(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out value, read: out read))
+			while(!Base128.TryReadInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out value, read: out read))
 			{
 				if(!await ReadMoreDataAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
 					throw new EndOfStreamException("Unexpected end of stream");
@@ -251,7 +252,7 @@ namespace ProtoStream
 			ulong value;
 			int read;
 
-			while(!Internal.Base64VarInt.TryReadUInt64VarInt(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out value, read: out read))
+			while(!Base128.TryReadUInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out value, read: out read))
 			{
 				if(!await ReadMoreDataAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
 					throw new EndOfStreamException("Unexpected end of stream");
@@ -270,7 +271,7 @@ namespace ProtoStream
 		{
 			ValueWithSize<long> varIntWithSize;
 
-			while(!Internal.Base64VarInt.TryReadInt64VarInt(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out varIntWithSize.Value, read: out varIntWithSize.Size))
+			while(!Base128.TryReadInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out varIntWithSize.Value, read: out varIntWithSize.Size))
 			{
 				if(!await ReadMoreDataAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
 					throw new EndOfStreamException("Unexpected end of stream");
@@ -289,7 +290,7 @@ namespace ProtoStream
 		{
 			ValueWithSize<ulong> varUIntWithSize;
 
-			while(!Internal.Base64VarInt.TryReadUInt64VarInt(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out varUIntWithSize.Value, read: out varUIntWithSize.Size))
+			while(!Base128.TryReadUInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out varUIntWithSize.Value, read: out varUIntWithSize.Size))
 			{
 				if(!await ReadMoreDataAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
 					throw new EndOfStreamException("Unexpected end of stream");
