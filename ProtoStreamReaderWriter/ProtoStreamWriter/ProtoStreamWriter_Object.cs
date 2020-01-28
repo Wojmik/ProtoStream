@@ -18,7 +18,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 			fieldHeader=CalculateFieldHeader(fieldNo: fieldNo, wireType: WireType.LengthDelimited);
 			//Try write field header and reserve place for object size
 			if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerLength)
-				|| this.Buffer.Length<headerLength+(sizeLength=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerLength))))
+				|| this.Buffer.Length-this.BufferPos-headerLength<(sizeLength=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerLength))))
 			{
 				//There was insufficient space in the Buffer. Flush and try again
 				await FlushAsync(flushStream: false, cancellationToken: cancellationToken)
@@ -26,7 +26,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 
 				//Try again write field header and reserve place for object size
 				if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerLength)
-					|| this.Buffer.Length<headerLength+(sizeLength=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerLength))))
+					|| this.Buffer.Length-this.BufferPos-headerLength<(sizeLength=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerLength))))
 					throw new InternalBufferOverflowException("Cannot write field header, too many nested objects");
 			}
 

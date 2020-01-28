@@ -92,7 +92,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 			int i, headerLength, sizeLength;
 
 			//Flush only when something was written to internal buffer after last flush
-			if(this.BufferPos<this.BufferPosAfterFlush)
+			if(this.BufferPosAfterFlush<this.BufferPos)
 			{
 				//Write size of open objects
 				for(i=0; i<=this.NestDatasIndex; i++)
