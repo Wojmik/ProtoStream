@@ -24,6 +24,11 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		protected const int DefaultBufferSize = 16384;
 
 		/// <summary>
+		/// String encoding
+		/// </summary>
+		protected Encoding StringEncoding { get => Encoding.UTF8; }
+
+		/// <summary>
 		/// Stream to write to
 		/// </summary>
 		protected Stream Stream { get; }
@@ -59,6 +64,18 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		private int NestDatasIndex;
 
 		/// <summary>
+		/// String encoder
+		/// </summary>
+		private readonly Encoder StringEncoder;
+
+#if NETSTANDARD2_0
+		/// <summary>
+		/// Internal buffer for string serializing
+		/// </summary>
+		private char[] CharBuffer;
+#endif
+
+		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="stream">Stream to write to</param>
@@ -77,9 +94,13 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 			this.Buffer=System.Buffers.ArrayPool<byte>.Shared.Rent(bufferSize);
 			this.NestDatas=new NestData[16];
 			this.NestDatasIndex=-1;
+			this.StringEncoder=this.StringEncoding.GetEncoder();
+#if NETSTANDARD2_0
+			this.CharBuffer=System.Buffers.ArrayPool<char>.Shared.Rent(512);
+#endif
 		}
 
-		public async ValueTask FlushAsync(CancellationToken cancellationToken = default)
+	public async ValueTask FlushAsync(CancellationToken cancellationToken = default)
 		{
 			await this.FlushAsync(flushStream: true, cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
@@ -147,10 +168,11 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 			return (ulong)fieldNo<<3|(ulong)wireType;
 		}
 
-		#region IDisposable Support
+#region IDisposable Support
 		protected virtual void Dispose(bool disposing)
 		{
 			byte[] buffer;
+			char[] charBuffer;
 
 			if(disposing)
 			{
@@ -164,6 +186,12 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 					if(buffer!=null)
 						System.Buffers.ArrayPool<byte>.Shared.Return(array: buffer, clearArray: true);
 
+#if NETSTANDARD2_0
+					charBuffer=Interlocked.Exchange(ref this.CharBuffer, null);
+					if(charBuffer!=null)
+						System.Buffers.ArrayPool<char>.Shared.Return(array: charBuffer, clearArray: true);
+#endif
+
 					if(!this.LeaveOpen)
 						this.Stream.Dispose();
 				}
@@ -174,6 +202,6 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		{
 			this.Dispose(true);
 		}
-		#endregion
+#endregion
 	}
 }

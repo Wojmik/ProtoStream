@@ -12,21 +12,21 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 	{
 		public async ValueTask ObjectEnterAsync(int fieldNo, CancellationToken cancellationToken = default)
 		{
-			int headerLength, sizeLength;
+			int headerSize, lengthHoleSize;
 			ulong fieldHeader;
 
 			fieldHeader=CalculateFieldHeader(fieldNo: fieldNo, wireType: WireType.LengthDelimited);
 			//Try write field header and reserve place for object size
-			if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerLength)
-				|| this.Buffer.Length-this.BufferPos-headerLength<(sizeLength=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerLength))))
+			if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerSize)
+				|| this.Buffer.Length-this.BufferPos-headerSize<(lengthHoleSize=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerSize))))
 			{
 				//There was insufficient space in the Buffer. Flush and try again
 				await FlushAsync(flushStream: false, cancellationToken: cancellationToken)
 					.ConfigureAwait(false);
 
 				//Try again write field header and reserve place for object size
-				if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerLength)
-					|| this.Buffer.Length-this.BufferPos-headerLength<(sizeLength=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerLength))))
+				if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerSize)
+					|| this.Buffer.Length-this.BufferPos-headerSize<(lengthHoleSize=Base128.GetRequiredBytesUInt32((uint)(this.Buffer.Length-this.BufferPos-headerSize))))
 					throw new InternalBufferOverflowException("Cannot write field header, too many nested objects");
 			}
 
@@ -39,8 +39,8 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 				Array.Copy(this.NestDatas, newNestData, this.NestDatas.Length);
 				this.NestDatas=newNestData;
 			}
-			this.BufferPos+=headerLength+sizeLength;
-			this.NestDatas[this.NestDatasIndex]=new NestData(fieldHeader: fieldHeader, sizeSpaceLength: sizeLength, dataStartIndex: this.BufferPos);
+			this.BufferPos+=headerSize+lengthHoleSize;
+			this.NestDatas[this.NestDatasIndex]=new NestData(fieldHeader: fieldHeader, sizeSpaceLength: lengthHoleSize, dataStartIndex: this.BufferPos);
 		}
 
 		public void ObjectLeave()

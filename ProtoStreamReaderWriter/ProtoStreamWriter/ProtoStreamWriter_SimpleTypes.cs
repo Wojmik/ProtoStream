@@ -13,7 +13,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 	{
 		public async ValueTask WriteFixedInt64FieldAsync(int fieldNo, long value, CancellationToken cancellationToken = default)
 		{
-			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt64LittleEndian, valueSize: sizeof(long))
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt64LittleEndian, wireType: WireType.Fixed64)
 				.ConfigureAwait(false);
 		}
 
@@ -25,7 +25,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		
 		public async ValueTask WriteFixedUInt64FieldAsync(int fieldNo, ulong value, CancellationToken cancellationToken = default)
 		{
-			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteUInt64LittleEndian, valueSize: sizeof(ulong))
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteUInt64LittleEndian, wireType: WireType.Fixed64)
 				.ConfigureAwait(false);
 		}
 
@@ -37,7 +37,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		
 		public async ValueTask WriteFixedInt32FieldAsync(int fieldNo, int value, CancellationToken cancellationToken = default)
 		{
-			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt32LittleEndian, valueSize: sizeof(int))
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt32LittleEndian, wireType: WireType.Fixed32)
 				.ConfigureAwait(false);
 		}
 
@@ -49,7 +49,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		
 		public async ValueTask WriteFixedUInt32FieldAsync(int fieldNo, uint value, CancellationToken cancellationToken = default)
 		{
-			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteUInt32LittleEndian, valueSize: sizeof(uint))
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteUInt32LittleEndian, wireType: WireType.Fixed32)
 				.ConfigureAwait(false);
 		}
 
@@ -59,9 +59,39 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 				.ConfigureAwait(false);
 		}
 		
+		public async ValueTask WriteFloatAsync(int fieldNo, float value, CancellationToken cancellationToken = default)
+		{
+			int intVal;
+#if NETSTANDARD2_0
+			intVal=SingleToInt32Bits(value);
+#else
+			intVal=BitConverter.SingleToInt32Bits(value);
+#endif
+			
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: intVal, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt32LittleEndian, wireType: WireType.Fixed32)
+				.ConfigureAwait(false);
+		}
+
+#if NETSTANDARD2_0
+		private static int SingleToInt32Bits(float value)
+		{
+			Span<int> buffer = stackalloc int[1];
+			
+			System.Runtime.InteropServices.MemoryMarshal.Cast<int, float>(buffer)[0]=value;
+
+			return buffer[0];
+		}
+#endif
+
+		public async ValueTask WriteDoubleAsync(int fieldNo, double value, CancellationToken cancellationToken = default)
+		{
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: BitConverter.DoubleToInt64Bits(value), cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt64LittleEndian, wireType: WireType.Fixed64)
+				.ConfigureAwait(false);
+		}
+		
 		public async ValueTask WriteDateTimeFieldAsync(int fieldNo, DateTime value, CancellationToken cancellationToken = default)
 		{
-			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value.Ticks, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt64LittleEndian, valueSize: sizeof(long))
+			await WriteFixedIntFieldAsync(fieldNo: fieldNo, value: value.Ticks, cancellationToken: cancellationToken, writeFixedIntMethod: BinaryPrimitives.TryWriteInt64LittleEndian, wireType: WireType.Fixed64)
 				.ConfigureAwait(false);
 		}
 		
@@ -72,12 +102,13 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		}
 		
 
-		private async ValueTask WriteFixedIntFieldAsync<TValue>(int fieldNo, TValue value, CancellationToken cancellationToken, WriteFixedIntHandler<TValue> writeFixedIntMethod, int valueSize)
+		private async ValueTask WriteFixedIntFieldAsync<TValue>(int fieldNo, TValue value, CancellationToken cancellationToken, WriteFixedIntHandler<TValue> writeFixedIntMethod, WireType wireType)
+			where TValue : struct
 		{
 			int headerLength;
 			ulong fieldHeader;
 
-			fieldHeader=CalculateFieldHeader(fieldNo: fieldNo, wireType: WireType.Fixed64);
+			fieldHeader=CalculateFieldHeader(fieldNo: fieldNo, wireType: wireType);
 			
 			//Try write field header and value
 			if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerLength)
@@ -93,15 +124,16 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 					throw new InternalBufferOverflowException("Cannot write field, too many nested objects");
 			}
 
-			this.BufferPos+=headerLength+valueSize;
+			this.BufferPos+=headerLength+9-(int)wireType;
 		}
 
 		private async ValueTask WriteVarIntFieldAsync<TValue>(int fieldNo, TValue value, CancellationToken cancellationToken, WriteVarIntHandler<TValue> writeVarIntMethod)
+			where TValue : struct
 		{
 			int headerLength, valueLength;
 			ulong fieldHeader;
 
-			fieldHeader=CalculateFieldHeader(fieldNo: fieldNo, wireType: WireType.Fixed64);
+			fieldHeader=CalculateFieldHeader(fieldNo: fieldNo, wireType: WireType.VarInt);
 			//Try write field header and value
 			if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerLength)
 				|| !writeVarIntMethod(destination: this.Buffer.AsSpan(this.BufferPos+headerLength), value: value, written: out valueLength))

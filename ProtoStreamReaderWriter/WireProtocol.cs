@@ -68,7 +68,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 			bool ok;
 
 			ok=Base128.TryReadUInt64(source: source, value: out headerValue, read: out read);
-			fieldHeader=new WireFieldHeaderData(wireType: (WireType)((int)headerValue&0x7), fieldNo: (int)(headerValue>>3));
+			fieldHeader=new WireFieldHeaderData(fieldNo: (int)(headerValue>>3), wireType: (WireType)((int)headerValue&0x7));
 			return ok;
 		}
 	}

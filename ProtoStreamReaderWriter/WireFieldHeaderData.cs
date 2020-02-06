@@ -10,35 +10,35 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 	public readonly struct WireFieldHeaderData
 	{
 		/// <summary>
-		/// Wire type
-		/// </summary>
-		public readonly WireType WireType;
-
-		/// <summary>
 		/// Field number
 		/// </summary>
 		public readonly int FieldNo;
 
 		/// <summary>
+		/// Wire type
+		/// </summary>
+		public readonly WireType WireType;
+
+		/// <summary>
 		/// Constructor
 		/// </summary>
-		/// <param name="wireType">Wire type</param>
 		/// <param name="fieldNo">Field number</param>
-		public WireFieldHeaderData(WireType wireType, int fieldNo)
+		/// <param name="wireType">Wire type</param>
+		public WireFieldHeaderData(int fieldNo, WireType wireType)
 		{
-			this.WireType=wireType;
 			this.FieldNo=fieldNo;
+			this.WireType=wireType;
 		}
 
 		/// <summary>
-		/// Decompose
+		/// Deconstruct
 		/// </summary>
-		/// <param name="wireType">Wire type</param>
 		/// <param name="fieldNo">Field number</param>
-		public void Decompose(out WireType wireType, out int fieldNo)
+		/// <param name="wireType">Wire type</param>
+		public void Deconstruct(out int fieldNo, out WireType wireType)
 		{
-			wireType=this.WireType;
 			fieldNo=this.FieldNo;
+			wireType=this.WireType;
 		}
 	}
 }
