@@ -33,7 +33,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 					//Even after flush there was no space to store everything, so use big array strategy
 					bufferPos=this.Buffer.Length;
 
-					//Write byta array header from right to left
+					//Write byte array header from right to left
 					WriteFieldHeaderFromRight(fieldHeader, fieldLength: byteArray.Length, bufferPos: ref bufferPos);
 
 					//Write nested objects structure from right to left
@@ -104,7 +104,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 					//Even after flush there was no space to store everything, so use big array strategy
 					bufferPos=this.Buffer.Length;
 
-					//Write byta array header from right to left
+					//Write byte array header from right to left
 					WriteFieldHeaderFromRight(fieldHeader, fieldLength: dataLength, bufferPos: ref bufferPos);
 
 					//Write nested objects structure from right to left
