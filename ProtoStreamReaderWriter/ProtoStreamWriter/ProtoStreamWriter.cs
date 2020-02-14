@@ -68,6 +68,11 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		/// </summary>
 		private readonly Encoder StringEncoder;
 
+		/// <summary>
+		/// Maximum size in bytes of one <see cref="char"/>
+		/// </summary>
+		private readonly int CharMaxSize;
+
 #if NETSTANDARD2_0
 		/// <summary>
 		/// Internal buffer for string serializing
@@ -95,6 +100,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 			this.NestDatas=new NestData[16];
 			this.NestDatasIndex=-1;
 			this.StringEncoder=this.StringEncoding.GetEncoder();
+			this.CharMaxSize=this.StringEncoding.GetMaxByteCount(1);
 #if NETSTANDARD2_0
 			this.CharBuffer=System.Buffers.ArrayPool<char>.Shared.Rent(512);
 #endif

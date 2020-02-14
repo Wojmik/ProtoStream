@@ -4,5 +4,5 @@ using System.Text;
 
 namespace WojciechMikołajewicz.ProtoStreamReaderWriter.InternalModel
 {
-	delegate bool WriteFixedIntHandler<TValue>(Span<byte> destination, TValue value);
+	public delegate bool TryReadSimpleFieldHandler<TValue>(ReadOnlySpan<byte> source, out TValue value, out int read);
 }

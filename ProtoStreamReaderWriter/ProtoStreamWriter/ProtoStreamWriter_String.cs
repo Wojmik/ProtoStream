@@ -42,17 +42,17 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 
 			do
 			{
-				//Try write field header and reserve space for field size
+				//Try write field header and reserve space for field size and one char (to prevent endles loop or fallback exception)
 				if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerSize)
-					|| this.Buffer.Length-this.BufferPos-headerSize<(lengthHoleSize=Base128.GetRequiredBytesUInt32((uint)Math.Min(this.StringEncoding.GetMaxByteCount(value.Length-charIndex), this.Buffer.Length-this.BufferPos-headerSize))))
+					|| this.Buffer.Length-this.BufferPos-headerSize<(lengthHoleSize=Base128.GetRequiredBytesUInt32((uint)Math.Min(this.StringEncoding.GetMaxByteCount(value.Length-charIndex), this.Buffer.Length-this.BufferPos-headerSize)))+this.CharMaxSize)
 				{
 					//There was insufficient space in the Buffer. Flush and try again
 					await FlushAsync(flushStream: false, cancellationToken: cancellationToken)
 						.ConfigureAwait(false);
 
-					//Try again write field header and reserve space for field size
+					//Try again write field header and reserve space for field size and one char (to prevent endles loop or fallback exception)
 					if(!Base128.TryWriteUInt64(destination: this.Buffer.AsSpan(this.BufferPos), value: fieldHeader, written: out headerSize)
-						|| this.Buffer.Length-this.BufferPos-headerSize<(lengthHoleSize=Base128.GetRequiredBytesUInt32((uint)Math.Min(this.StringEncoding.GetMaxByteCount(value.Length-charIndex), this.Buffer.Length-this.BufferPos-headerSize))))
+						|| this.Buffer.Length-this.BufferPos-headerSize<(lengthHoleSize=Base128.GetRequiredBytesUInt32((uint)Math.Min(this.StringEncoding.GetMaxByteCount(value.Length-charIndex), this.Buffer.Length-this.BufferPos-headerSize)))+this.CharMaxSize)
 						throw new InternalBufferOverflowException("Cannot write field, too many nested objects");
 				}
 

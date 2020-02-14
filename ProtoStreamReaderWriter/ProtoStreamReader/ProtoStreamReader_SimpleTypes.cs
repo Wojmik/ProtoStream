@@ -267,19 +267,19 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 				.ConfigureAwait(false);
 		}
 
-		public async ValueTask<DateTime> ReadDateTimeAsync(WireType wireType, CancellationToken cancellationToken = default)
+		public async ValueTask<bool> ReadBoolAsync(WireType wireType, CancellationToken cancellationToken = default)
 		{
-			return new DateTime(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
+			return 0!=await ReadUIntMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
+		}
+
+		public async ValueTask<double> ReadDoubleAsync(WireType wireType, CancellationToken cancellationToken = default)
+		{
+			return BitConverter.Int64BitsToDouble(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
 				.ConfigureAwait(false));
 		}
 
-		public async ValueTask<TimeSpan> ReadTimeSpanAsync(WireType wireType, CancellationToken cancellationToken = default)
-		{
-			return new TimeSpan(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
-				.ConfigureAwait(false));
-		}
-
-		public async ValueTask<float> ReadFloatAsync(WireType wireType, CancellationToken cancellationToken = default)
+		public async ValueTask<float> ReadSingleAsync(WireType wireType, CancellationToken cancellationToken = default)
 		{
 #if NETSTANDARD2_0
 			return Int32BitsToSingle(await ReadIntMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
@@ -301,9 +301,15 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		}
 #endif
 
-		public async ValueTask<double> ReadDoubleAsync(WireType wireType, CancellationToken cancellationToken = default)
+		public async ValueTask<DateTime> ReadDateTimeAsync(WireType wireType, CancellationToken cancellationToken = default)
 		{
-			return BitConverter.Int64BitsToDouble(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
+			return new DateTime(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
+				.ConfigureAwait(false));
+		}
+
+		public async ValueTask<TimeSpan> ReadTimeSpanAsync(WireType wireType, CancellationToken cancellationToken = default)
+		{
+			return new TimeSpan(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
 				.ConfigureAwait(false));
 		}
 	}
