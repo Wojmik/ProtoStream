@@ -269,16 +269,17 @@ namespace ProtoStream
 		/// <returns>Deserialized value</returns>
 		public async ValueTask<ValueWithSize<long>> ReadVarIntWithSizeAsync(CancellationToken cancellationToken = default)
 		{
-			ValueWithSize<long> varIntWithSize;
+			long value;
+			int size;
 
-			while(!Base128.TryReadInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out varIntWithSize.Value, read: out varIntWithSize.Size))
+			while(!Base128.TryReadInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out value, read: out size))
 			{
 				if(!await ReadMoreDataAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
 					throw new EndOfStreamException("Unexpected end of stream");
 			}
-			BufferPos+=varIntWithSize.Size;
-			BufferLength-=varIntWithSize.Size;
-			return varIntWithSize;
+			BufferPos+=size;
+			BufferLength-=size;
+			return new ValueWithSize<long>(value: value, size: size);
 		}
 
 		/// <summary>
@@ -288,16 +289,17 @@ namespace ProtoStream
 		/// <returns>Deserialized value</returns>
 		public async ValueTask<ValueWithSize<ulong>> ReadVarUIntWithSizeAsync(CancellationToken cancellationToken = default)
 		{
-			ValueWithSize<ulong> varUIntWithSize;
+			ulong value;
+			int size;
 
-			while(!Base128.TryReadUInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out varUIntWithSize.Value, read: out varUIntWithSize.Size))
+			while(!Base128.TryReadUInt64(source: new ReadOnlySpan<byte>(Buffer, BufferPos, BufferLength), value: out value, read: out size))
 			{
 				if(!await ReadMoreDataAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
 					throw new EndOfStreamException("Unexpected end of stream");
 			}
-			BufferPos+=varUIntWithSize.Size;
-			BufferLength-=varUIntWithSize.Size;
-			return varUIntWithSize;
+			BufferPos+=size;
+			BufferLength-=size;
+			return new ValueWithSize<ulong>(value: value, size: size);
 		}
 
 		/// <summary>

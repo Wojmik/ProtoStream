@@ -56,13 +56,7 @@ namespace ProtoStream.TypeSerializers
 		/// <returns>Deserialized value</returns>
 		public override async ValueTask<ValueWithSize<TimeSpan>> DeserializeValueAsync(ProtoStreamReader reader, CancellationToken cancellationToken = default)
 		{
-			ValueWithSize<TimeSpan> value;
-
-			value.Value=new TimeSpan(await reader.ReadInt64Async(cancellationToken: cancellationToken)
-				.ConfigureAwait(false));
-			value.Size=sizeof(long);
-
-			return value;
+			return new ValueWithSize<TimeSpan>(value: new TimeSpan(await reader.ReadInt64Async(cancellationToken: cancellationToken).ConfigureAwait(false)), size: sizeof(long));
 		}
 	}
 }

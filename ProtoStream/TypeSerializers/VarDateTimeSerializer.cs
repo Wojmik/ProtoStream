@@ -31,7 +31,7 @@ namespace ProtoStream.TypeSerializers
 		/// <returns></returns>
 		public override async ValueTask SerializeAsync(ProtoStreamWriter writer, int fieldNo, DateTime value, CancellationToken cancellationToken = default)
 		{
-			await writer.WriteVarIntAsync(fieldNo: fieldNo, value: value.Ticks, cancellationToken: cancellationToken)
+			await writer.WriteVarIntAsync(fieldNo: fieldNo, value: value.ToBinary(), cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 		}
 
@@ -44,7 +44,7 @@ namespace ProtoStream.TypeSerializers
 		/// <returns></returns>
 		public override async ValueTask SerializeValueAsync(ProtoStreamWriter writer, DateTime value, CancellationToken cancellationToken = default)
 		{
-			await writer.WriteVarIntValueAsync(value: value.Ticks, cancellationToken: cancellationToken)
+			await writer.WriteVarIntValueAsync(value: value.ToBinary(), cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 		}
 
@@ -61,7 +61,7 @@ namespace ProtoStream.TypeSerializers
 			value=await reader.ReadVarIntWithSizeAsync(cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 
-			return new ValueWithSize<DateTime>(value: new DateTime(value.Value), size: value.Size);
+			return new ValueWithSize<DateTime>(value: DateTime.FromBinary(value.Value), size: value.Size);
 		}
 	}
 }

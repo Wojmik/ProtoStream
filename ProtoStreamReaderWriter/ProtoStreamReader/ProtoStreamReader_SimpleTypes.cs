@@ -303,7 +303,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 
 		public async ValueTask<DateTime> ReadDateTimeAsync(WireType wireType, CancellationToken cancellationToken = default)
 		{
-			return new DateTime(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
+			return DateTime.FromBinary(await ReadLongMethods[(int)wireType](psr: this, cancellationToken: cancellationToken)
 				.ConfigureAwait(false));
 		}
 

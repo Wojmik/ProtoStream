@@ -56,13 +56,7 @@ namespace ProtoStream.TypeSerializers
 		/// <returns>Deserialized value</returns>
 		public override async ValueTask<ValueWithSize<uint>> DeserializeValueAsync(ProtoStreamReader reader, CancellationToken cancellationToken = default)
 		{
-			ValueWithSize<uint> value;
-
-			value.Value=(uint)await reader.ReadInt32Async(cancellationToken: cancellationToken)
-				.ConfigureAwait(false);
-			value.Size=sizeof(uint);
-
-			return value;
+			return new ValueWithSize<uint>(value: (uint)await reader.ReadInt32Async(cancellationToken: cancellationToken).ConfigureAwait(false), size: sizeof(uint));
 		}
 	}
 }

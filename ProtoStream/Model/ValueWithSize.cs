@@ -8,17 +8,17 @@ namespace ProtoStream
 	/// Value with size
 	/// </summary>
 	/// <typeparam name="T">Value type</typeparam>
-	public struct ValueWithSize<T>
+	public readonly struct ValueWithSize<T>
 	{
 		/// <summary>
 		/// Value
 		/// </summary>
-		public T Value;
+		public readonly T Value;
 
 		/// <summary>
 		/// Size of value in bytes
 		/// </summary>
-		public int Size;
+		public readonly int Size;
 
 		/// <summary>
 		/// Constructor

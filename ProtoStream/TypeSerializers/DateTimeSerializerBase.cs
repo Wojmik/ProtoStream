@@ -35,7 +35,7 @@ namespace ProtoStream.TypeSerializers
 			else
 				throw new SerializationException($"Unexpected wire type: {wireType} for type: {typeof(DateTime)}");
 
-			return new DateTime(value);
+			return DateTime.FromBinary(value);
 		}
 
 		/// <summary>

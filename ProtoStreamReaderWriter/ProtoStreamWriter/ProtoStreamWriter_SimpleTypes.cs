@@ -165,7 +165,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 		private static bool TryWriteDateTime(Span<byte> destination, DateTime value, out int written)
 		{
 			written=sizeof(long);
-			return BinaryPrimitives.TryWriteInt64LittleEndian(destination: destination, value: value.Ticks);
+			return BinaryPrimitives.TryWriteInt64LittleEndian(destination: destination, value: value.ToBinary());
 		}
 
 		private static bool TryWriteTimeSpan(Span<byte> destination, TimeSpan value, out int written)

@@ -192,7 +192,7 @@ namespace WojciechMikołajewicz.ProtoStreamReaderWriter
 
 			read=sizeof(long);
 			ok=BinaryPrimitives.TryReadInt64LittleEndian(source: source, value: out val);
-			value=new DateTime(val);
+			value=DateTime.FromBinary(val);
 			return ok;
 		}
 
